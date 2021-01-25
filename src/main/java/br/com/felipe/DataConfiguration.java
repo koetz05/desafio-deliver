@@ -8,9 +8,11 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.orm.jpa.JpaVendorAdapter;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 
+/*Classe Para Efetuar as Configurações do Banco de dados 
+ * Banco de dados Utilizado PostgreSQL*/
 @Configuration
 public class DataConfiguration {
-
+	
 	@Bean
 	public DataSource dataSource() {
 		DriverManagerDataSource dataSource = new DriverManagerDataSource();
