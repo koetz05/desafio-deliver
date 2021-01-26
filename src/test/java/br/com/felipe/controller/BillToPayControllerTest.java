@@ -1,59 +1,68 @@
 package br.com.felipe.controller;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import java.util.Date;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-
+import br.com.felipe.controllers.BillToPayController;
+import br.com.felipe.dtos.BillToPayDTO;
 import br.com.felipe.models.BillToPay;
-import br.com.felipe.util.AbstractTest;
+import br.com.felipe.repositories.BillToPayRepository;
+import br.com.felipe.services.BillToPayService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
-public class BillToPayControllerTest extends AbstractTest {
-	
-   @Before
-   public void setUp() {
-      super.setUp();
-   }
-   
-   @Test
-   public void getBillsList() throws Exception {
-	   
-      String uri = "/bill";
-      MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get(uri)
-         .accept(MediaType.APPLICATION_JSON_VALUE)).andReturn();
-      
-      int status = mvcResult.getResponse().getStatus();
-      assertEquals(200, status);
-      String content = mvcResult.getResponse().getContentAsString();
-      BillToPay[] productlist = super.mapFromJson(content, BillToPay[].class);
-      assertTrue(productlist.length > 0);
-   }
-   @Test
-   public void createProduct() throws Exception {
-      String uri = "/bill";
-      
-      BillToPay bill = new BillToPay();
-      bill.setId(50l);
-      bill.setName("Felipe 50");
-      bill.setCorretValue(12.0);
-      bill.setPaymentDate(new Date());
-      bill.setDueDate(new Date());
-            
-      String inputJson = super.mapToJson(bill);
-      MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.post(uri)
-         .contentType(MediaType.APPLICATION_JSON_VALUE)
-         .content(inputJson)).andReturn();
-      
-      int status = mvcResult.getResponse().getStatus();
-      assertEquals(201, status);
-      String content = mvcResult.getResponse().getContentAsString();
-      assertEquals(content, "Conta Foi Cadastrada");
-   }
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+
+@WebMvcTest(BillToPayController.class)
+public class BillToPayControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
+    private BillToPayService billToPayService;
+
+    @MockBean
+    private BillToPayRepository billToPayRepository;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @Test
+    @DisplayName("Deve buscar todas as contas a pagar")
+    void getAll() throws Exception {
+        List<BillToPayDTO> list = new ArrayList<>();
+        list.add(new BillToPayDTO("firstName4", 10.0, 0.0, 0, new Date()));
+        list.add(new BillToPayDTO("firstName5", 15.0, 0.0, 0, new Date()));
+        Mockito.when(billToPayService.getAll()).thenReturn(list);
+        MvcResult mvc = mockMvc.perform(get("/bill")).andExpect(status().isOk()).andReturn();
+        String result = mvc.getResponse().getContentAsString();
+        System.out.println(result);
+    }
+
+    @Test
+    public void save() throws Exception {
+        BillToPay bill = new BillToPay(null, "Teste Mock", 15.0, 0.0, new Date(), new Date(), 0);
+        BillToPay billSaved = new BillToPay(1L, "Teste Mock", 15.0, 0.0, new Date(), new Date(), 0);
+
+        Mockito.when(billToPayRepository.save(bill)).thenReturn(billSaved);
+
+        MvcResult mvc = mockMvc.perform(
+                post("/bill")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(bill)))
+                .andExpect(status().isOk())
+                .andReturn();
+        String result = mvc.getResponse().getContentAsString();
+        System.out.println(result);
+    }
 }

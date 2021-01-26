@@ -35,6 +35,16 @@ public class BillToPay {
 	public BillToPay() {
 	}
 
+	public BillToPay(Long id, String name, Double originalValue, Double corretValue, Date paymentDate, Date dueDate, Number delayDays) {
+		this.id = id;
+		this.name = name;
+		this.originalValue = originalValue;
+		this.corretValue = corretValue;
+		this.paymentDate = paymentDate;
+		this.dueDate = dueDate;
+		this.delayDays = delayDays;
+	}
+
 	public Long getId() {
 		return id;
 	}
